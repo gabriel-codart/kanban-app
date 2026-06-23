@@ -46,6 +46,34 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Tema Visual Aurora */
+  --animate-aurora-slow: aurora-slow 10s infinite alternate;
+  --animate-aurora-delay: aurora-delay 10s infinite alternate;
+
+  @keyframes aurora-slow {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    50% {
+      transform: translate(40px, -60px) scale(1.2);
+    }
+    100% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+  }
+
+  @keyframes aurora-delay {
+    0% {
+      transform: translate(0px, 0px) scale(1.1);
+    }
+    50% {
+      transform: translate(-50px, 40px) scale(0.85);
+    }
+    100% {
+      transform: translate(30px, -30px) scale(1.05);
+    }
+  }
 }
 
 :root {
