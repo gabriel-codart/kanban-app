@@ -5,11 +5,13 @@ export interface Task {
   createdAt: Date;
 }
 
-export type ColumnId = 'todo' | 'doing' | 'done';
-
 export interface Column {
-  id: ColumnId;
+  id: string;
   title: string;
   color: string; // Ex: 'orange', 'blue', 'green'
   tasks: Task[];
+}
+
+export interface KanbanColumnProps {
+  column: Column;
 }
