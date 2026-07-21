@@ -1,14 +1,18 @@
 'use client';
 
 import React from 'react';
-import { useSortable } from '@dnd-kit/sortable';
+import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { KanbanColumnProps } from '@/types/kanban';
+import { Column } from '@/types/kanban';
 import { PlusCircle, GripVertical } from 'lucide-react';
+import { KanbanTaskCard } from './kanban-task-card';
 
+interface KanbanColumnProps {
+  column: Column;
+  onAddTask: (columnId: string) => void;
+}
 
-export function KanbanColumn({ column }: KanbanColumnProps) {
-  // O hook useSortable dará os listeners e estilos necessários para mover o elemento
+export function KanbanColumn({ column, onAddTask }: KanbanColumnProps) {
   const {
     attributes,
     listeners,
@@ -16,16 +20,13 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({
-    id: column.id
-  });
+  } = useSortable({ id: column.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition
+    transition,
   };
 
-  // Se estiver arrastando, deixamos o card original semi-transparente (efeito ghost)
   if (isDragging) {
     return (
       <div
@@ -42,9 +43,8 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
       style={style}
       className="flex flex-col border-2 border-dashed border-border rounded-xl p-5 min-h-[500px] bg-muted/10 backdrop-blur-md transition-none hover:border-muted-foreground/30 relative group/column"
     >
-      {/* Topo da coluna com o título e a área de arrastar */}
+      {/* Topo da coluna */}
       <div className="flex items-center justify-between mb-4">
-        {/* Ícone de arrastar sutil que aparece no hover */}
         <div 
           {...attributes} 
           {...listeners} 
@@ -62,15 +62,23 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
 
       {/* Botão de Adicionar Tarefa */}
       <button 
+        onClick={() => onAddTask(column.id)}
         className={`w-full py-2.5 px-4 rounded-lg border flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase transition-all duration-200 active:scale-[0.98] cursor-pointer ${column.color}`}
       >
         <PlusCircle className="w-4 h-4" />
         Adicionar Tarefa
       </button>
 
-      {/* Espaço para as Tasks */}
+      {/* Lista de Tarefas Arrastáveis */}
       <div className="flex-1 mt-4 space-y-3">
-        {/* As tarefas renderizadas vão aqui */}
+        <SortableContext
+          items={column.tasks.map((t) => t.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {column.tasks.map((task) => (
+            <KanbanTaskCard key={task.id} task={task} />
+          ))}
+        </SortableContext>
       </div>
     </div>
   );
