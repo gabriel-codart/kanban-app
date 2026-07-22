@@ -5,6 +5,7 @@ import { Column, Task } from '@/types/kanban';
 import { PlusCircle } from 'lucide-react';
 import { KanbanColumn } from './kanban-column';
 import { ActionModal } from './ui/action-modal';
+import { TaskDetailsModal } from './task-details-modal';
 
 import { 
   DndContext, 
@@ -80,6 +81,38 @@ export function KanbanBoard() {
     );
 
     setTargetColumnIdForTask(null);
+  };
+
+  // Variáveis de estados para Editar e Deletar Tasks
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  // Função para deletar tarefa
+  const handleDeleteTask = (taskId: string) => {
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        tasks: col.tasks.filter((t) => t.id !== taskId),
+      }))
+    );
+  };
+
+  // Função para salvar a edição da tarefa
+  const handleEditTaskSubmit = (data: Record<string, string>) => {
+    if (!editingTask || !data.title?.trim()) return;
+
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        tasks: col.tasks.map((t) =>
+          t.id === editingTask.id
+            ? { ...t, title: data.title.trim(), description: data.description?.trim() }
+            : t
+        ),
+      }))
+    );
+
+    setEditingTask(null);
   };
 
   // Lógica do Drag and Drop (Colunas e Tarefas)
@@ -169,6 +202,7 @@ export function KanbanBoard() {
                 key={column.id} 
                 column={column} 
                 onAddTask={(colId) => setTargetColumnIdForTask(colId)}
+                onTaskClick={(task) => setSelectedTask(task)}
               />
             ))}
           </SortableContext>
@@ -229,6 +263,44 @@ export function KanbanBoard() {
             name: 'description',
             label: 'Descrição',
             placeholder: 'Detalhes opcionais sobre a tarefa...',
+            type: 'textarea',
+          },
+        ]}
+      />
+
+      {/* Modal de Visualização de Detalhes da Task */}
+      <TaskDetailsModal
+        isOpen={Boolean(selectedTask)}
+        task={selectedTask}
+        onClose={() => setSelectedTask(null)}
+        onDelete={handleDeleteTask}
+        onEdit={(task) => setEditingTask(task)}
+      />
+
+      {/* Modal de Edição com dados pré-carregados */}
+      <ActionModal
+        key={editingTask?.id || 'edit-none'}
+        isOpen={Boolean(editingTask)}
+        onClose={() => setEditingTask(null)}
+        onSubmit={handleEditTaskSubmit}
+        title="Editar Tarefa"
+        description="Atualize as informações da tarefa selecionada."
+        submitText="Salvar Alterações"
+        initialValues={{
+          title: editingTask?.title || '',
+          description: editingTask?.description || '',
+        }}
+        fields={[
+          {
+            name: 'title',
+            label: 'Título da Tarefa',
+            placeholder: 'Ex: Criar tela de login...',
+            required: true,
+          },
+          {
+            name: 'description',
+            label: 'Descrição',
+            placeholder: 'Detalhes da tarefa...',
             type: 'textarea',
           },
         ]}

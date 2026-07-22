@@ -4,13 +4,14 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Task } from '@/types/kanban';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Eye } from 'lucide-react';
 
 interface KanbanTaskCardProps {
   task: Task;
+  onClick?: (task: Task) => void; // <--- Novo callback
 }
 
-export function KanbanTaskCard({ task }: KanbanTaskCardProps) {
+export function KanbanTaskCard({ task, onClick }: KanbanTaskCardProps) {
   const {
     attributes,
     listeners,
@@ -25,7 +26,6 @@ export function KanbanTaskCard({ task }: KanbanTaskCardProps) {
     transition,
   };
 
-  // Efeito "Ghost" ao arrastar
   if (isDragging) {
     return (
       <div
@@ -40,27 +40,31 @@ export function KanbanTaskCard({ task }: KanbanTaskCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="group relative p-4 rounded-xl border border-border bg-background/50 backdrop-blur-md shadow-sm transition-all hover:border-muted-foreground/30 hover:shadow-md flex flex-col gap-1.5"
+      onClick={() => onClick?.(task)}
+      className="group relative p-4 rounded-xl border border-border bg-background/50 backdrop-blur-md shadow-sm transition-all hover:border-muted-foreground/30 hover:shadow-md flex flex-col gap-1.5 cursor-pointer"
     >
-      {/* Cabeçalho da Task com Ícone de Arrastar */}
+      {/* Cabeçalho da Task */}
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-sm text-foreground leading-snug tracking-tight">
           {task.title}
         </h3>
         
-        {/* Grip para arrastar a tarefa */}
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing p-0.5 text-muted-foreground/30 hover:text-foreground rounded transition-colors opacity-0 group-hover:opacity-100"
-        >
-          <GripVertical className="w-4 h-4" />
+        <div className="flex items-center gap-1">
+          {/* Grip para arrastar — stopPropagation evita abrir o modal ao tentar arrastar */}
+          <div
+            {...attributes}
+            {...listeners}
+            onClick={(e) => e.stopPropagation()}
+            className="cursor-grab active:cursor-grabbing p-0.5 text-muted-foreground/30 hover:text-foreground rounded transition-colors opacity-0 group-hover:opacity-100"
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
         </div>
       </div>
 
-      {/* Descrição Opcional */}
+      {/* Descrição Opcional (Com indicação sutil de mais detalhes no hover) */}
       {task.description && (
-        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed pr-2">
           {task.description}
         </p>
       )}

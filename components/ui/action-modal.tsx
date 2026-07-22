@@ -19,6 +19,8 @@ interface ActionModalProps {
   description?: string;
   fields: Field[];
   submitText?: string;
+  variant?: 'default' | 'danger';
+  initialValues?: Record<string, string>; // <--- Nova prop para pré-preencher
 }
 
 export function ActionModal({
@@ -29,9 +31,11 @@ export function ActionModal({
   description,
   fields,
   submitText = 'Confirmar',
+  variant = 'default',
+  initialValues = {}, // <--- Valor padrão como objeto vazio
 }: ActionModalProps) {
-  // Estado local normal — inicializado sempre limpo
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  // Inicializamos o estado com o objeto de initialValues
+  const [formData, setFormData] = useState<Record<string, string>>(initialValues);
 
   if (!isOpen) return null;
 
@@ -46,10 +50,7 @@ export function ActionModal({
   };
 
   return (
-    // Overlay escurecido com o blur estilo Liquid Glass
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      
-      {/* Container do Modal */}
       <div className="relative w-full max-w-md p-6 bg-background/80 backdrop-blur-xl border border-border rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200">
         
         {/* Botão Fechar */}
@@ -85,7 +86,7 @@ export function ActionModal({
                 <textarea
                   required={field.required}
                   placeholder={field.placeholder}
-                  value={formData[field.name] || ''}
+                  value={formData[field.name] ?? ''}
                   onChange={(e) => handleChange(field.name, e.target.value)}
                   rows={3}
                   className="w-full px-3 py-2 rounded-lg bg-muted/30 border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/50 transition-all text-sm resize-none"
@@ -95,7 +96,7 @@ export function ActionModal({
                   type="text"
                   required={field.required}
                   placeholder={field.placeholder}
-                  value={formData[field.name] || ''}
+                  value={formData[field.name] ?? ''}
                   onChange={(e) => handleChange(field.name, e.target.value)}
                   className="w-full px-3 py-2 rounded-lg bg-muted/30 border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/50 transition-all text-sm"
                 />
@@ -114,7 +115,11 @@ export function ActionModal({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-opacity shadow-sm cursor-pointer ${
+                variant === 'danger'
+                  ? 'bg-destructive text-destructive-foreground hover:opacity-90'
+                  : 'bg-primary text-primary-foreground hover:opacity-90'
+              }`}
             >
               {submitText}
             </button>

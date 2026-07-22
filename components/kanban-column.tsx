@@ -3,16 +3,17 @@
 import React from 'react';
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Column } from '@/types/kanban';
+import { Column, Task } from '@/types/kanban';
 import { PlusCircle, GripVertical } from 'lucide-react';
 import { KanbanTaskCard } from './kanban-task-card';
 
 interface KanbanColumnProps {
   column: Column;
   onAddTask: (columnId: string) => void;
+  onTaskClick: (task: Task) => void;
 }
 
-export function KanbanColumn({ column, onAddTask }: KanbanColumnProps) {
+export function KanbanColumn({ column, onAddTask, onTaskClick }: KanbanColumnProps) {
   const {
     attributes,
     listeners,
@@ -76,7 +77,11 @@ export function KanbanColumn({ column, onAddTask }: KanbanColumnProps) {
           strategy={verticalListSortingStrategy}
         >
           {column.tasks.map((task) => (
-            <KanbanTaskCard key={task.id} task={task} />
+            <KanbanTaskCard
+              key={task.id}
+              task={task}
+              onClick={onTaskClick}
+            />
           ))}
         </SortableContext>
       </div>
