@@ -1,13 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
+
+// Opções de cores disponíveis com seus estilos Tailwind
+export const STAGE_COLOR_OPTIONS = [
+  { id: 'amber', label: 'Laranja', class: 'border-amber-500 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' },
+  { id: 'sky', label: 'Azul', class: 'border-sky-500 bg-sky-500/10 text-sky-500 hover:bg-sky-500/20' },
+  { id: 'emerald', label: 'Verde', class: 'border-emerald-500 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20' },
+  { id: 'fuchsia', label: 'Roxo', class: 'border-fuchsia-500 bg-fuchsia-500/10 text-fuchsia-500 hover:bg-fuchsia-500/20' },
+  { id: 'rose', label: 'Rosa', class: 'border-rose-500 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20' },
+  { id: 'indigo', label: 'Índigo', class: 'border-indigo-500 bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20' },
+];
 
 interface Field {
   name: string;
   label: string;
   placeholder?: string;
-  type?: 'text' | 'textarea';
+  type?: 'text' | 'textarea' | 'color'; // <--- Adicionado tipo 'color'
   required?: boolean;
 }
 
@@ -20,7 +30,7 @@ interface ActionModalProps {
   fields: Field[];
   submitText?: string;
   variant?: 'default' | 'danger';
-  initialValues?: Record<string, string>; // <--- Nova prop para pré-preencher
+  initialValues?: Record<string, string>;
 }
 
 export function ActionModal({
@@ -32,9 +42,8 @@ export function ActionModal({
   fields,
   submitText = 'Confirmar',
   variant = 'default',
-  initialValues = {}, // <--- Valor padrão como objeto vazio
+  initialValues = {},
 }: ActionModalProps) {
-  // Inicializamos o estado com o objeto de initialValues
   const [formData, setFormData] = useState<Record<string, string>>(initialValues);
 
   if (!isOpen) return null;
@@ -81,8 +90,28 @@ export function ActionModal({
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {field.label}
               </label>
-              
-              {field.type === 'textarea' ? (
+
+              {/* Renderiza o Seletor de Cores se for type="color" */}
+              {field.type === 'color' ? (
+                <div className="flex items-center gap-3 pt-1">
+                  {STAGE_COLOR_OPTIONS.map((opt) => {
+                    const isSelected = (formData[field.name] || STAGE_COLOR_OPTIONS[0].class) === opt.class;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => handleChange(field.name, opt.class)}
+                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${opt.class} ${
+                          isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110' : 'opacity-70 hover:opacity-100'
+                        }`}
+                        title={opt.label}
+                      >
+                        {isSelected && <Check className="w-4 h-4 stroke-[3]" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : field.type === 'textarea' ? (
                 <textarea
                   required={field.required}
                   placeholder={field.placeholder}

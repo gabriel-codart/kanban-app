@@ -4,16 +4,24 @@ import React from 'react';
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Column, Task } from '@/types/kanban';
-import { PlusCircle, GripVertical } from 'lucide-react';
+import { PlusCircle, GripVertical, Pencil, Trash2 } from 'lucide-react';
 import { KanbanTaskCard } from './kanban-task-card';
 
 interface KanbanColumnProps {
   column: Column;
   onAddTask: (columnId: string) => void;
-  onTaskClick: (task: Task) => void;
+  onTaskClick?: (task: Task) => void;
+  onEditColumn?: (column: Column) => void;
+  onDeleteColumn?: (columnId: string) => void;
 }
 
-export function KanbanColumn({ column, onAddTask, onTaskClick }: KanbanColumnProps) {
+export function KanbanColumn({
+  column,
+  onAddTask,
+  onTaskClick,
+  onEditColumn,
+  onDeleteColumn,
+}: KanbanColumnProps) {
   const {
     attributes,
     listeners,
@@ -45,7 +53,7 @@ export function KanbanColumn({ column, onAddTask, onTaskClick }: KanbanColumnPro
       className="flex flex-col border-2 border-dashed border-border rounded-xl p-5 min-h-[500px] bg-muted/10 backdrop-blur-md transition-none hover:border-muted-foreground/30 relative group/column"
     >
       {/* Topo da coluna */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-2">
         <div 
           {...attributes} 
           {...listeners} 
@@ -54,9 +62,28 @@ export function KanbanColumn({ column, onAddTask, onTaskClick }: KanbanColumnPro
           <GripVertical className="w-4 h-4" />
         </div>
 
-        <h2 className="text-xl font-bold text-center text-foreground tracking-tight flex-1 pr-4">
+        <h2 className="text-lg font-bold text-foreground tracking-tight flex-1 truncate">
           {column.title}
         </h2>
+
+        {/* Ações da Coluna (Editar e Excluir) */}
+        <div className="flex items-center gap-1 opacity-0 group-hover/column:opacity-100 transition-opacity">
+          <button
+            onClick={() => onEditColumn?.(column)}
+            title="Editar Estágio"
+            className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          
+          <button
+            onClick={() => onDeleteColumn?.(column.id)}
+            title="Excluir Estágio"
+            className="p-1 text-muted-foreground hover:text-destructive rounded transition-colors cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
       
       <hr className="border-border mb-5" />
@@ -77,9 +104,9 @@ export function KanbanColumn({ column, onAddTask, onTaskClick }: KanbanColumnPro
           strategy={verticalListSortingStrategy}
         >
           {column.tasks.map((task) => (
-            <KanbanTaskCard
-              key={task.id}
-              task={task}
+            <KanbanTaskCard 
+              key={task.id} 
+              task={task} 
               onClick={onTaskClick}
             />
           ))}

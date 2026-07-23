@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Column, Task } from '@/types/kanban';
 import { PlusCircle } from 'lucide-react';
 import { KanbanColumn } from './kanban-column';
-import { ActionModal } from './ui/action-modal';
+import { ActionModal, STAGE_COLOR_OPTIONS } from './ui/action-modal';
 import { TaskDetailsModal } from './task-details-modal';
 
 import { 
@@ -53,11 +53,42 @@ export function KanbanBoard() {
     const newColumn: Column = {
       id: crypto.randomUUID(),
       title: data.title.trim(),
-      color: PRESET_COLORS[columns.length] || PRESET_COLORS[0],
+      color: data.color || STAGE_COLOR_OPTIONS[0].class,
       tasks: [],
     };
 
     setColumns([...columns, newColumn]);
+  };
+
+  // Variáveis de estados para Editar e Deletar Estágios
+  const [editingColumn, setEditingColumn] = useState<Column | null>(null);
+  const [deletingColumnId, setDeletingColumnId] = useState<string | null>(null);
+
+  // Submissão da Edição de Coluna
+  const handleEditColumnSubmit = (data: Record<string, string>) => {
+    if (!editingColumn || !data.title?.trim()) return;
+
+    setColumns((prev) =>
+      prev.map((col) =>
+        col.id === editingColumn.id
+          ? {
+              ...col,
+              title: data.title.trim(),
+              color: data.color || col.color,
+            }
+          : col
+      )
+    );
+
+    setEditingColumn(null);
+  };
+
+  // Confirmação de Exclusão da Coluna
+  const handleConfirmDeleteColumn = () => {
+    if (!deletingColumnId) return;
+
+    setColumns((prev) => prev.filter((col) => col.id !== deletingColumnId));
+    setDeletingColumnId(null);
   };
 
   // Criar Nova Tarefa
@@ -83,7 +114,7 @@ export function KanbanBoard() {
     setTargetColumnIdForTask(null);
   };
 
-  // Variáveis de estados para Editar e Deletar Tasks
+  // Variáveis de estados para Editar e Deletar Tarefas
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -203,6 +234,8 @@ export function KanbanBoard() {
                 column={column} 
                 onAddTask={(colId) => setTargetColumnIdForTask(colId)}
                 onTaskClick={(task) => setSelectedTask(task)}
+                onEditColumn={(col) => setEditingColumn(col)}
+                onDeleteColumn={(colId) => setDeletingColumnId(colId)}
               />
             ))}
           </SortableContext>
@@ -231,8 +264,11 @@ export function KanbanBoard() {
         onClose={() => setIsStageModalOpen(false)}
         onSubmit={handleCreateStage}
         title="Novo Estágio"
-        description="Crie uma nova coluna para organizar o fluxo de trabalho."
+        description="Crie uma nova coluna e escolha a cor de destaque do botão."
         submitText="Criar Estágio"
+        initialValues={{
+          color: STAGE_COLOR_OPTIONS[0].class, // Laranja como padrão
+        }}
         fields={[
           {
             name: 'title',
@@ -240,7 +276,53 @@ export function KanbanBoard() {
             placeholder: 'Ex: Em Revisão, Backlog...',
             required: true,
           },
+          {
+            name: 'color',
+            label: 'Cor de Destaque',
+            type: 'color',
+          },
         ]}
+      />
+
+      {/* Modal de Editar Estágio */}
+      <ActionModal
+        key={editingColumn?.id || 'edit-col-none'}
+        isOpen={Boolean(editingColumn)}
+        onClose={() => setEditingColumn(null)}
+        onSubmit={handleEditColumnSubmit}
+        title="Editar Estágio"
+        description="Altere o nome e a cor desta coluna."
+        submitText="Salvar Alterações"
+        initialValues={{
+          title: editingColumn?.title || '',
+          color: editingColumn?.color || STAGE_COLOR_OPTIONS[0].class,
+        }}
+        fields={[
+          {
+            name: 'title',
+            label: 'Nome do Estágio',
+            placeholder: 'Ex: Em Revisão...',
+            required: true,
+          },
+          {
+            name: 'color',
+            label: 'Cor de Destaque',
+            type: 'color',
+          },
+        ]}
+      />
+
+      {/* Modal de Confirmação para Excluir Estágio */}
+      <ActionModal
+        key={deletingColumnId || 'delete-col-none'}
+        isOpen={Boolean(deletingColumnId)}
+        onClose={() => setDeletingColumnId(null)}
+        onSubmit={handleConfirmDeleteColumn}
+        title="Excluir Estágio?"
+        description="Tem certeza que deseja excluir esta coluna? Todas as tarefas contidas nela serão removidas."
+        submitText="Excluir Coluna"
+        variant="danger"
+        fields={[]}
       />
 
       {/* Modal para Criar Nova Tarefa */}
